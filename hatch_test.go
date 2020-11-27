@@ -41,6 +41,7 @@ func ChechEquals(t *testing.T, js1 string, js2 string, expected TestExpectedScen
 
 	outcome := interpretTestResult(result, err)
 	if err != nil {
+		t.Fatalf(err.Error())
 		t.FailNow()
 	}
 	if outcome != expected {

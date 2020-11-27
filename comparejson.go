@@ -7,8 +7,8 @@ import (
 )
 
 func AreEqualJSON(s1, s2 string) (bool, error) {
-	var o1 map[string]interface{}
-	var o2 map[string]interface{}
+	var o1 interface{}
+	var o2 interface{}
 
 	var err error
 	err = json.Unmarshal([]byte(s1), &o1)
