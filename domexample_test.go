@@ -14,8 +14,9 @@ func TestDomExamples(T *testing.T) {
 }
 
 type JsonReaderDom struct {
-	Root map[string]interface{}
-	CurrentNode map[string]interface{}
+	Root        *Node
+	currentNode *Node
+	currentList List
 }
 
 func parseJsonDom(jsonStream string) {
@@ -30,8 +31,8 @@ func parseJsonDom(jsonStream string) {
 }
 
 func (l *JsonReaderDom) OnBeginDocument() {
-	l.Root = make(map[string]interface{})
-	l.CurrentNode = l.Root
+	l.Root = &Node{}
+	l.currentNode = l.Root
 }
 
 func (l *JsonReaderDom) OnEndDocument() {}
@@ -40,7 +41,7 @@ func (l *JsonReaderDom) OnBeginElement(name string, path []string) {
 	if l.currentList == nil {
 		child := &Node{Name: name}
 		child.Parent = l.currentNode
-		l.currentNode.Children.Add(name, child)
+		l.currentNode.Children.Add(name,child)
 		l.currentNode = child
 	}
 }
@@ -51,7 +52,7 @@ func (l *JsonReaderDom) OnEndElement(name string, path []string) {
 func (l *JsonReaderDom) OnBeginList(name string, path []string) {
 	//pin.D(fmt.Sprintf("%v", strings.Join(path[:], "/")), name+" : [")
 	list := NewNodeSet()
-	//l.currentNode.Lists[name] = list
+	l.currentNode.Lists[name] = list
 	l.currentList = list
 
 }

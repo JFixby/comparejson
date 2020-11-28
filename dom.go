@@ -4,14 +4,10 @@ type List interface {
 	Size() int
 	Contains(element *Node) bool
 	ToArray() []*Node
-	Add(name string, child *Node)
 }
 
 type NodeSet struct {
 	hashSet map[*Node]bool
-}
-
-func (n *NodeSet) Add(name string, child *Node) {
 }
 
 func (n *NodeSet) Size() int {
@@ -41,8 +37,10 @@ func NewNodeSet() List {
 
 type Node struct {
 	Name       string
+	IsList     bool
 	Attributes map[string]string
-	Children   List
+	Children   map[string]*Node
+	List       []*Node
 	Parent     *Node
 }
 
