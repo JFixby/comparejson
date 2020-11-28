@@ -32,31 +32,6 @@ func TestHatch(t *testing.T) {
 	}
 ]`
 
-	ChechEquals(t, js1, js2, TRUE)
-
-}
-
-func ChechEquals(t *testing.T, js1 string, js2 string, expected TestExpectedScenario) {
-	result, err := AreEqualJSON(js1, js2)
-
-	outcome := interpretTestResult(result, err)
-	if err != nil {
-		t.Fatalf(err.Error())
-		t.FailNow()
-	}
-	if outcome != expected {
-		t.Fatalf("Test failed: expected (%v), received (%v)", expected, outcome)
-		t.FailNow()
-	}
-
-}
-
-func interpretTestResult(result bool, err error) TestExpectedScenario {
-	if err != nil {
-		return ERROR
-	}
-	if result {
-		return TRUE
-	}
-	return FALSE
+	parseJson(js1)
+	parseJson(js2)
 }
