@@ -1,21 +1,27 @@
 package comparejson
 
-import (
-	"fmt"
-	"github.com/jfixby/pin"
-	"io"
-	"strings"
-	"testing"
-)
+const (
+	examplejs1 = `[
+	{
+		"id":"jhasdad",
+		"name":"test json"
+	},
+	{
+		"id":"wqweq",
+		"name":"test json 2"
+	}
+]`
+	examplejs2 = `[
+	{
+	"id":"wqweq",
+	"name":"test json 2" },
+	{
+	"name":"test json",
+	"id":"jhasdad"
+	}
+]`
 
-type ElementType string
-
-const ELEMENT = "ELEMENT"
-const LIST = "LIST"
-
-func TestParser(T *testing.T) {
-
-	jsonStream := `{"web-app": {
+	examplejs3 = `{"web-app": {
   "servlet": [   
     {
       "servlet-name": "cofaxCDS",
@@ -103,48 +109,4 @@ func TestParser(T *testing.T) {
   "taglib": {
     "taglib-uri": "cofax.tld",
     "taglib-location": "/WEB-INF/tlds/cofax.tld"}}}`
-
-	parseJson(jsonStream)
-
-}
-
-func parseJson(jsonStream string) {
-	var stream io.Reader = strings.NewReader(jsonStream)
-	params := &JsonReaderParams{
-		stream:   &stream,
-		listener: &JsonReaderTestListener{},
-	}
-	reader := NewJsonReader(params)
-	reader.ReadAll()
-}
-
-type JsonReaderTestListener struct {
-}
-
-func (l *JsonReaderTestListener) OnBeginDocument() {}
-
-func (l *JsonReaderTestListener) OnEndDocument()   {}
-
-func (l *JsonReaderTestListener) OnBeginElement(name string, path []string) {
-	pin.D(fmt.Sprintf("(%v){", strings.Join(path[:], "/")))
-}
-func (l *JsonReaderTestListener) OnEndElement(name string, path []string) {
-	pin.D("}", name)
-}
-
-func (l *JsonReaderTestListener) OnBeginList(name string, path []string) {
-	pin.D(fmt.Sprintf("(%v)[", strings.Join(path[:], "/")), name)
-}
-func (l *JsonReaderTestListener) OnAddListElement() {}
-
-func (l *JsonReaderTestListener) OnEndList(name string, path []string) {
-	pin.D("]", name)
-}
-
-func (l *JsonReaderTestListener) OnAttribute(key string, value string, path []string) {
-	pin.D(fmt.Sprintf("(%v)", strings.Join(path[:], "/")), value)
-}
-
-func (l *JsonReaderTestListener) OnError(e error) {
-	pin.E("", e)
-}
+)

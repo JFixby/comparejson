@@ -18,7 +18,6 @@ type JsonReaderListener interface {
 	OnEndElement(name string, path []string)
 
 	OnBeginList(name string, path []string)
-	OnAddListElement()
 	OnEndList(name string, path []string)
 
 	OnAttribute(key string, value string, path []string)
@@ -113,13 +112,10 @@ func readList(args *readJsonArgs) error {
 		if err != nil {
 			return err
 		}
-		args.listener.OnAddListElement()
 		args.pop()
 		if exitScope {
 			return nil
 		}
-
-
 	}
 }
 
