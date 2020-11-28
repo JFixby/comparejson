@@ -12,7 +12,6 @@ type NodeSet struct {
 }
 
 func (n *NodeSet) Add(name string, child *Node) {
-	hashSet.
 }
 
 func (n *NodeSet) Size() int {
