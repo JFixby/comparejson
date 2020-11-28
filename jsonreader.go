@@ -11,17 +11,17 @@ type JsonReader interface {
 }
 
 type JsonReaderListener interface {
-	OnBegin()
-	OnEnd()
+	OnBeginDocument()
+	OnEndDocument()
 
-	OnBeginElement(name string, level int)
-	OnEndElement(name string)
+	OnBeginElement(name string, path []string)
+	OnEndElement(name string, path []string)
 
-	OnBeginList(name string, level int)
+	OnBeginList(name string, path []string)
 	OnAddListElement()
-	OnEndList(name string)
+	OnEndList(name string, path []string)
 
-	OnAttribute(key string, value string)
+	OnAttribute(key string, value string, path []string)
 
 	OnError(e error)
 }
@@ -32,94 +32,122 @@ type simpleJsonReader struct {
 	listener JsonReaderListener
 }
 
-func (s *simpleJsonReader) ReadAll() {
-	readJson(s.decoder, s.listener)
+type readJsonArgs struct {
+	decoder  *json.Decoder
+	listener JsonReaderListener
+	path     []string
 }
 
-func readJson(d *json.Decoder, listener JsonReaderListener) error {
-	listener.OnBegin()
-	_, err := readJsonValue(d, "", listener, 0)
+func (args *readJsonArgs) lastKey() string {
+	return args.path[len(args.path)-1]
+}
+
+func (args *readJsonArgs) push(token string) {
+	args.path = append(args.path, token)
+}
+
+func (args *readJsonArgs) pop() {
+	args.path = args.path[0 : len(args.path)-1]
+}
+
+func (s *simpleJsonReader) ReadAll() {
+	args := &readJsonArgs{
+		decoder:  s.decoder,
+		listener: s.listener,
+		path:     []string{},
+	}
+	readJson(args)
+}
+
+func readJson(args *readJsonArgs) error {
+	args.listener.OnBeginDocument()
+	args.push("")
+	_, err := readJsonValue(args)
 	if err != nil {
-		listener.OnError(err)
+		args.listener.OnError(err)
 		return err
 	}
-	listener.OnEnd()
+	args.pop()
+	args.listener.OnEndDocument()
 	return nil
 }
 
 const ExitScope = true
 
-func readJsonValue(d *json.Decoder, key string, listener JsonReaderListener, level int) (bool, error) {
-	token, err := readToken(d)
+func readJsonValue(args *readJsonArgs) (bool, error) {
+	token, err := readToken(args)
 
 	if err != nil {
 		return ExitScope, err
 	}
 
 	if token == "{" {
-		//pin.D("begin element", key)
-		listener.OnBeginElement(key, level+1)
-		readElement(d, key, listener, level+1)
+		args.listener.OnBeginElement(args.lastKey(), args.path)
+		readElement(args)
 
 		return !ExitScope, nil
 	}
 
 	if token == "]" {
-		//pin.D("end array", key)
-		listener.OnEndList(key)
+		args.listener.OnEndList(args.lastKey(), args.path)
 		return ExitScope, nil
 	}
 	if token == "[" {
-		//pin.D("begin array", key)
-		listener.OnBeginList(key, level+1)
-		readList(d, key, listener, level+1)
+		args.listener.OnBeginList(args.lastKey(), args.path)
+		readList(args)
 
 		return !ExitScope, nil
 	}
 
-	//pin.D(key, token)
-	listener.OnAttribute(key, token)
+	args.listener.OnAttribute(args.lastKey(), token, args.path)
 
 	return !ExitScope, nil
 }
 
-func readList(d *json.Decoder, key string, listener JsonReaderListener, level int) error {
+func readList(args *readJsonArgs) error {
+	i := 0
 	for {
-		exit_scope, err := readJsonValue(d, "", listener, level)
+		args.push("")
+		i++
+		exitScope, err := readJsonValue(args)
 		if err != nil {
 			return err
 		}
-		if exit_scope {
+		args.listener.OnAddListElement()
+		args.pop()
+		if exitScope {
 			return nil
 		}
 
-		listener.OnAddListElement()
+
 	}
 }
 
-func readElement(d *json.Decoder, key string, listener JsonReaderListener, level int) error {
+func readElement(args *readJsonArgs) error {
 	for {
-		token, err := readToken(d)
+		token, err := readToken(args)
 		if err != nil {
 			return err
 		}
+
 		if token == "}" {
-			//pin.D("end element", key)
-			listener.OnEndElement(key)
+			args.listener.OnEndElement(args.lastKey(), args.path)
 			return nil
 		}
-		exit_scope, err := readJsonValue(d, token, listener, level)
+		args.push(token)
+		exitScope, err := readJsonValue(args)
 		if err != nil {
 			return err
 		}
-		if exit_scope {
+		args.pop()
+		if exitScope {
 			return nil
 		}
 	}
 }
 
-func readToken(d *json.Decoder) (string, error) {
-	entry, err := d.Token()
+func readToken(args *readJsonArgs) (string, error) {
+	entry, err := args.decoder.Token()
 	if err != nil {
 		return "", err
 	}

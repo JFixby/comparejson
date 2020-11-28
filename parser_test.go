@@ -121,28 +121,28 @@ func parseJson(jsonStream string) {
 type JsonReaderTestListener struct {
 }
 
-func (l *JsonReaderTestListener) OnBegin() {}
-func (l *JsonReaderTestListener) OnEnd()   {}
+func (l *JsonReaderTestListener) OnBeginDocument() {}
 
-func (l *JsonReaderTestListener) OnBeginElement(name string, level int) {
-	pin.D(fmt.Sprintf("(%v){", level), name)
+func (l *JsonReaderTestListener) OnEndDocument()   {}
+
+func (l *JsonReaderTestListener) OnBeginElement(name string, path []string) {
+	pin.D(fmt.Sprintf("(%v){", strings.Join(path[:], "/")))
 }
-func (l *JsonReaderTestListener) OnEndElement(name string) {
+func (l *JsonReaderTestListener) OnEndElement(name string, path []string) {
 	pin.D("}", name)
 }
 
-func (l *JsonReaderTestListener) OnBeginList(name string, level int) {
-	pin.D(fmt.Sprintf("(%v)[", level), name)
+func (l *JsonReaderTestListener) OnBeginList(name string, path []string) {
+	pin.D(fmt.Sprintf("(%v)[", strings.Join(path[:], "/")), name)
 }
 func (l *JsonReaderTestListener) OnAddListElement() {}
 
-func (l *JsonReaderTestListener) OnEndList(name string) {
+func (l *JsonReaderTestListener) OnEndList(name string, path []string) {
 	pin.D("]", name)
-
 }
 
-func (l *JsonReaderTestListener) OnAttribute(key string, value string) {
-	pin.D(key, value)
+func (l *JsonReaderTestListener) OnAttribute(key string, value string, path []string) {
+	pin.D(fmt.Sprintf("(%v)", strings.Join(path[:], "/")), value)
 }
 
 func (l *JsonReaderTestListener) OnError(e error) {
