@@ -8,8 +8,9 @@ type DBEntries struct {
 	List []DBEntry
 }
 type DBEntry struct {
-	Id   string `json: "id"`
-	Name string `json: "name"`
+	//Id   string `json: "id"`
+	//Name string `json: "name"`
+	//data
 }
 
 func EqualDataSets(s1 *DBEntries, s2 *DBEntries) bool {
