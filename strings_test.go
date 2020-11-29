@@ -21,6 +21,16 @@ const (
 	}
 ]`
 
+	examplejs4 = `[
+	{
+	"id":"wqweq",
+	"name":"test json 2" },
+	{
+	"name":"test json",
+	"id":"d"
+	}
+]`
+
 	examplejs3 = `{"web-app": {
   "servlet": [   
     {

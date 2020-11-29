@@ -40,7 +40,7 @@ type Node struct {
 	IsList     bool
 	Attributes map[string]string
 	Children   map[string]*Node
-	List       []*Node
+	List       List
 	Parent     *Node
 }
 
@@ -52,6 +52,10 @@ func DeepEqualNodes(n1, n2 *Node) bool {
 	}
 
 	if n1.Name != n2.Name {
+		return false
+	}
+
+	if n1.IsList != n2.IsList {
 		return false
 	}
 
@@ -75,7 +79,19 @@ func DeepEqualNodes(n1, n2 *Node) bool {
 		}
 	}
 
-	if !DeepEqualLists(n1.Children, n2.Children) {
+	if len(n1.Children) != len(n2.Children) {
+		return false
+	}
+
+	for k, c2 := range n2.Children {
+		c1 := n1.Children[k]
+
+		if DeepEqualNodes(c1, c2) {
+			return false
+		}
+	}
+
+	if !DeepEqualLists(n1.List, n2.List) {
 		return false
 	}
 
